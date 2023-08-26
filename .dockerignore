@@ -1,0 +1,7 @@
+# Chặn các file không cần thiết khi chạy tạo container trên docker hub
+.pom.xml
+/.git
+/.settings
+.classpath
+.project
+.springBeans

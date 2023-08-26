@@ -1,0 +1,59 @@
+./mvnw spring-boot:run
+- Build your own image with Dockerfile(Tao image docker hub)
+docker build --tag springboot-docker .
+
+- To create a new tag for the image we.ve built above: (tao tag cho phien bang dockerfile springboot-docker)
+docker tag springboot-docker:latest springboot-docker:v1.0.0
+
+- Login your Docker Hub Account, create a Repository
+docker tag springboot-docker:v1.0.0 phuonglth/springboot-docker:v1.0.0
+
+- Push to the Docker Hub:(truoc khi push phai login)
+docker push phuonglth/springboot-docker:v1.0.0
+
+- Pull and start/run a container
+docker run -dp 8085:8083 \
+--name springboot-docker-container \
+-v "$(pwd):/app" \
+--network springboot-app-network \
+phuonglth/springboot-docker:v1.0.0
+
+- Test Springboot app(you can use Web Browser, Postman):
+curl --request GET \
+-- url http://localhost:8085/students \
+-- header 'content-type: application/json'
+
+- Xem log container
+docker logs springboot-docker-container
+
+- Update code sau khi CRUD and ReRUN
+docker restart springboot-docker-container
+
+- Tao Docker network
+docker network create springboot-app-network
+
+- New create another MySQL Container and put this within the same
+network with springboot-docker-container
+docker run --rm -d \
+-v mysql-springboot-data:/var/lib/mysql \
+-v mysql-springboot-config-deamond:/etc/mysql/conf.d \
+--name mysql-springboot-container \
+-p 3310:3306 \
+-e MYSQL_USER=phuonglth \
+-e MYSQL_PASSWORD=Abc@123456789 \
+-e MYSQL_ROOT_PASSWORD=root \
+-e MYSQL_DATABASE=StudentManagement \
+--network springboot-app-network \
+mysql:8.0.28
+
+- Truy cap thu vao CMD mysql-springboot-container:
+docker exec -ti mysql-springboot-container mysql -u root -p
+
+- Now replace all command to create containers into a .yml file
+=> use Docker Compose
+
+# Remove old Container:
+docker rm -f mysql-springboot-container springboot-docker-container
+
+Build Docker Compose file:
+docker-compose -f docker-compose.dev.yml up -d --build
